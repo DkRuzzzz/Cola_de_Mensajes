@@ -16,6 +16,8 @@ Las principales consideraciones de diseño incluyen:
 
 Este diseño busca asegurar continuidad operativa, confiabilidad en la entrega de mensajes y capacidad de adaptación ante incrementos de carga o fallos parciales en alguno de los módulos del sistema.
 
+---
+
 ## 2. Arquitectura General del Sistema
 
 El sistema propuesto sigue un modelo de arquitectura distribuida basada en eventos, donde los distintos servicios interactúan mediante un broker de mensajería en lugar de realizar llamadas directas entre sí. Este enfoque permite desacoplar los módulos, reducir dependencias y facilitar la escalabilidad independiente de cada componente.
