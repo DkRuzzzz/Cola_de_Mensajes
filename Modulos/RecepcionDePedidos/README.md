@@ -1,11 +1,23 @@
-# Sistemas Distribuidos 
+## Módulo de Recepción de Pedidos
 
-## Unidad 2: Comunicación entre procesos
+Actúa como punto de entrada del sistema. Su responsabilidad es recibir las órdenes generadas por los clientes y transformarlas en eventos publicados en la cola pedidos del broker.
 
-### Diseño de Aplicación con Cola de Mensajes
+Rol Arquitectónico
 
-##### Integrantes del equipo 
+- Tipo: Productor
+- Publica en: pedidos
+- No consume mensajes
+- No depende de otros servicios
 
-- Jesús Virgilio Ayala Gaspar 
+Flujo de Operación
 
-- Maricarmen Buenfil Perez 
+1. Se recibe un pedido (simulado en la demo).
+2. Se genera un mensaje estructurado con ID único.
+3. Se publica el evento en la cola pedidos.
+4. El broker almacena el mensaje de manera persistente.
+
+Consideraciones
+
+- Los pedidos incluyen identificadores únicos para permitir trazabilidad.
+- El módulo es completamente independiente del procesamiento posterior.
+- Puede escalarse horizontalmente si la carga de pedidos aumenta.
