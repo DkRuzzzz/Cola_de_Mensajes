@@ -188,3 +188,13 @@ El Servicio de Procesamiento de Pagos puede implementar políticas de reintento 
 
 Asimismo, el sistema puede incorporar una cola adicional de tipo Dead Letter Queue para almacenar mensajes que no puedan procesarse tras múltiples intentos, permitiendo su análisis posterior sin bloquear el flujo general del sistema.
 
+---
+
+## 6. Conclusión
+
+El diseño presentado demuestra cómo una arquitectura distribuida basada en eventos y colas de mensajes permite construir sistemas escalables, resilientes y desacoplados. Al utilizar un broker de mensajería como Oracle Open Message Queue, se garantiza comunicación asíncrona, persistencia de mensajes y entrega confiable bajo el modelo at-least-once.
+
+La separación de responsabilidades entre servicios independientes facilita el escalamiento horizontal, la tolerancia a fallos parciales y la evolución futura del sistema sin afectar su estructura central. A diferencia de una arquitectura monolítica o fuertemente acoplada, este enfoque permite que cada componente crezca y se adapte de manera autónoma ante incrementos de demanda o cambios en los requerimientos del negocio.
+
+En conjunto, la propuesta evidencia cómo los principios de comunicación indirecta y arquitectura orientada a eventos constituyen una base sólida para el desarrollo de sistemas distribuidos modernos orientados a alta disponibilidad y confiabilidad operativa.
+
