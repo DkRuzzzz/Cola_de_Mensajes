@@ -1,11 +1,22 @@
-# Sistemas Distribuidos 
+## Módulo de Notificación al Cliente
 
-## Unidad 2: Comunicación entre procesos
+Consume eventos relevantes del sistema y simula el envío de notificaciones al cliente sobre el estado de su pedido.
 
-### Diseño de Aplicación con Cola de Mensajes
+Rol Arquitectónico
 
-##### Integrantes del equipo 
+- Tipo: Consumidor
+- Consume: `confirmacion_pago`
+- Consume: `alertas`
+- No publica mensajes
 
-- Jesús Virgilio Ayala Gaspar 
+Flujo de Operación
 
-- Maricarmen Buenfil Perez 
+1. Si recibe un evento "PagoConfirmado", informa al cliente que su pago fue procesado exitosamente.
+2. Si recibe un evento "AlertaInventario", notifica al cliente sobre la falta de disponibilidad del producto.
+
+Consideraciones de Diseño
+
+- Funciona como consumidor transversal.
+- No afecta el flujo principal del sistema.
+- Puede escalarse independientemente.
+- Representa la capa de interacción con el usuario final.
