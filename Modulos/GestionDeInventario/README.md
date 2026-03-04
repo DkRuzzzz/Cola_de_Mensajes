@@ -5,8 +5,8 @@ Consume eventos de la cola confirmacion_pago y actualiza el stock de productos d
 Rol Arquitectónico
 
 - Tipo: Consumidor y Productor condicional
-- Consume: confirmacion_pago
-- Publica en: alertas (solo en caso de falta de stock)
+- Consume: `confirmacion_pago`
+- Publica en: `alertas` (solo en caso de falta de stock)
 
 Flujo de Operación
 
