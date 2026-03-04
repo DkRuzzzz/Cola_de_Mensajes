@@ -1,11 +1,23 @@
-# Sistemas Distribuidos 
+## Módulo de Procesamiento de Pagos
 
-## Unidad 2: Comunicación entre procesos
+Consume eventos de la cola pedidos y simula el procesamiento de pagos asociados a cada orden.
 
-### Diseño de Aplicación con Cola de Mensajes
+Rol Arquitectónico
 
-##### Integrantes del equipo 
+- Tipo: Consumidor y Productor
+- Consume: `pedidos`
+- Publica en: `confirmacion_pago`
 
-- Jesús Virgilio Ayala Gaspar 
+Flujo de Operación
 
-- Maricarmen Buenfil Perez 
+1. Recibe un evento de tipo "PedidoCreado".
+2. Simula validación de pago.
+3. Si el pago es exitoso, publica un evento "PagoConfirmado".
+4. En caso de fallo, registra el evento y podría aplicar política de reintento.
+
+Consideraciones de Diseño
+
+- Opera bajo modelo at-least-once.
+- Puede escalar horizontalmente.
+- No tiene dependencia directa con Inventario.
+- Representa la transición de estado financiero del pedido.
