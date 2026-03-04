@@ -47,3 +47,144 @@ Este modelo permite que cada servicio funcione de manera autónoma, pudiendo esc
 El diagrama arquitectónico sitúa al broker de mensajería en el núcleo del sistema, representando el punto central de comunicación entre los servicios. Las colas de mensajes (`pedidos`, `confirmacion_pago` y `alertas`) se encuentran definidas dentro del broker, enfatizando que el intercambio de información se realiza exclusivamente a través de este componente.
 
 No existen comunicaciones directas entre los servicios, lo cual refuerza el desacoplamiento estructural del sistema. Cada módulo interactúa únicamente con las colas correspondientes, ya sea publicando o consumiendo mensajes, lo que permite escalabilidad independiente y tolerancia a fallos parciales.
+
+---
+
+## 3. Diseño de Colas y Flujo de Mensajes
+
+El sistema utiliza un modelo de comunicación basado en eventos, donde cada acción relevante genera un mensaje que es publicado en una cola específica dentro del broker. Las colas actúan como mecanismos de desacoplamiento entre productores y consumidores, permitiendo que los servicios operen de manera independiente.
+
+### 3.1 Cola `pedidos`
+
+Esta cola almacena los eventos generados cuando un cliente realiza una compra.
+El Servicio de Recepción de Pedidos actúa como productor, mientras que el Servicio de Procesamiento de Pagos actúa como consumidor.
+
+Cada mensaje contiene información estructurada del pedido, incluyendo:
+
+- Identificador único del pedido
+- Identificador del cliente
+- Lista de productos
+- Cantidades solicitadas
+- Fecha y hora de creación
+
+Este evento representa la intención inicial de compra y marca el inicio del flujo de procesamiento.
+
+### 3.2 Cola `confirmacion_pago`
+
+Esta cola almacena los eventos generados tras el procesamiento exitoso de un pago.
+
+El Servicio de Procesamiento de Pagos publica el mensaje, y el Servicio de Gestión de Inventario lo consume.
+
+El mensaje incluye:
+
+- Identificador del pedido
+- Estado del pago (aprobado)
+- Referencia de transacción
+- Marca de tiempo de confirmación
+
+Este evento indica que el pedido ha superado la validación financiera y puede continuar su flujo dentro del sistema.
+
+### 3.3 Cola `alertas`
+
+Esta cola contiene eventos relacionados con incidencias, como falta de stock o inconsistencias detectadas durante el procesamiento.
+
+El Servicio de Gestión de Inventario publica mensajes en esta cola cuando detecta que un producto no está disponible en la cantidad solicitada.
+
+El Servicio de Notificaciones consume estos eventos para informar al cliente sobre la situación del pedido.
+
+### 3.4 Flujo General de Eventos
+
+El flujo del sistema sigue la siguiente secuencia:
+
+1. Se genera un evento de tipo "PedidoCreado".
+2. Tras su procesamiento, se genera un evento "PagoConfirmado".
+3. En caso de inconsistencias, se genera un evento "AlertaInventario".
+4. El Servicio de Notificaciones actúa como consumidor transversal de eventos relevantes.
+
+Este modelo permite que cada transición de estado del pedido esté representada como un evento independiente, facilitando trazabilidad, auditoría y extensibilidad futura del sistema.
+
+---
+
+## 4. Escalabilidad y Tolerancia a Fallos
+
+Uno de los principales objetivos del diseño es garantizar que el sistema pueda adaptarse a incrementos en la carga de trabajo y mantener su operación ante fallos parciales. Para ello, la arquitectura basada en colas de mensajes ofrece mecanismos naturales de escalabilidad horizontal y resiliencia.
+
+### 4.1 Escalabilidad Horizontal
+
+Cada servicio consumidor puede escalarse de manera independiente mediante la ejecución de múltiples instancias que escuchen la misma cola.
+
+Por ejemplo:
+
+- Varias instancias del Servicio de Procesamiento de Pagos pueden consumir simultáneamente mensajes de la cola `pedidos`.
+- Múltiples instancias del Servicio de Inventario pueden procesar eventos de `confirmacion_pago`.
+
+El broker, implementado con Oracle Open Message Queue, distribuye los mensajes entre los consumidores disponibles, equilibrando la carga de manera automática.
+
+Este modelo permite aumentar la capacidad del sistema sin modificar su arquitectura interna, simplemente desplegando más instancias de los servicios.
+
+### 4.2 Desacoplamiento y Tolerancia a Fallos
+
+La comunicación asíncrona garantiza desacoplamiento temporal entre los servicios. Esto implica que los productores y consumidores no necesitan estar activos simultáneamente.
+
+Si un servicio consumidor se encuentra temporalmente fuera de operación:
+
+- Los mensajes permanecen almacenados en la cola correspondiente.
+- El sistema continúa aceptando y publicando nuevos eventos.
+- Una vez restablecido el servicio, este puede procesar los mensajes acumulados.
+
+Este comportamiento evita la propagación de fallos y permite que el sistema mantenga continuidad operativa ante caídas parciales.
+
+### 4.3 Persistencia y Entrega Confiable
+
+El sistema opera bajo el modelo de entrega at-least-once, donde los mensajes permanecen en la cola hasta que el consumidor confirma explícitamente su procesamiento.
+
+En caso de que un servicio falle antes de completar la operación, el mensaje no confirmado podrá ser reprocesado, evitando la pérdida de información.
+
+### 4.4 Idempotencia y Consistencia
+
+Dado que el modelo at-least-once puede implicar la reprocesamiento de mensajes, el diseño contempla mecanismos de idempotencia basados en identificadores únicos de pedido.
+
+Cada servicio verifica si un evento ya fue procesado previamente antes de aplicar cambios persistentes (por ejemplo, descuento de inventario o actualización de estado). Esto previene efectos secundarios duplicados y mantiene la consistencia del sistema.
+
+---
+
+## 5. Alta Disponibilidad y Monitoreo
+
+Además de la escalabilidad horizontal y la tolerancia a fallos a nivel de servicios, el diseño contempla consideraciones adicionales orientadas a mantener la disponibilidad del sistema y facilitar su supervisión en entornos productivos.
+
+### 5.1 Alta Disponibilidad del Broker
+
+Dado que el broker de mensajería constituye el núcleo de comunicación del sistema, su disponibilidad es crítica para la operación general.
+
+El sistema puede fortalecerse mediante:
+
+- Configuración del broker con almacenamiento persistente en disco.
+- Replicación o configuración en clúster del broker.
+- Implementación de mecanismos de respaldo y recuperación ante fallos.
+
+El uso de Oracle Open Message Queue permite habilitar almacenamiento persistente de mensajes, asegurando que los eventos no se pierdan ante reinicios o fallos temporales del servidor.
+
+En un entorno productivo, podría implementarse una arquitectura con nodos redundantes del broker para evitar un único punto de fallo.
+
+### 5.2 Monitoreo y Registro de Eventos
+
+La observabilidad del sistema es esencial para detectar anomalías, medir desempeño y garantizar trazabilidad de los pedidos.
+
+Se recomienda la implementación de:
+
+- Registro de logs estructurados en cada servicio.
+- Identificadores únicos de correlación por pedido.
+- Métricas como:
+  - Tiempo promedio de procesamiento.
+  - Número de mensajes pendientes por cola.
+  - Tasa de fallos en pagos.
+  - Retrasos en actualización de inventario.
+
+El monitoreo de la longitud de las colas permite identificar cuellos de botella y escalar servicios de manera preventiva.
+
+### 5.3 Gestión de Errores y Reintentos
+
+El Servicio de Procesamiento de Pagos puede implementar políticas de reintento controlado en caso de fallos temporales de transacción.
+
+Asimismo, el sistema puede incorporar una cola adicional de tipo Dead Letter Queue para almacenar mensajes que no puedan procesarse tras múltiples intentos, permitiendo su análisis posterior sin bloquear el flujo general del sistema.
+
