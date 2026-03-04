@@ -2,7 +2,7 @@ import javax.jms.*;
 import com.sun.messaging.ConnectionFactory;
 import com.sun.messaging.ConnectionConfiguration;
 
-public class ProductorPedidos {
+public class RecepcionDePedidos {
 
     public static void main(String[] args) {
         try {
@@ -30,4 +30,5 @@ public class ProductorPedidos {
             e.printStackTrace();
         }
     }
+
 }
