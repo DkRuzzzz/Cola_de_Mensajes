@@ -1,11 +1,23 @@
-# Sistemas Distribuidos 
+## Módulo de Gestión de Inventario
 
-## Unidad 2: Comunicación entre procesos
+Consume eventos de la cola confirmacion_pago y actualiza el stock de productos disponibles.
 
-### Diseño de Aplicación con Cola de Mensajes
+Rol Arquitectónico
 
-##### Integrantes del equipo 
+- Tipo: Consumidor y Productor condicional
+- Consume: confirmacion_pago
+- Publica en: alertas (solo en caso de falta de stock)
 
-- Jesús Virgilio Ayala Gaspar 
+Flujo de Operación
 
-- Maricarmen Buenfil Perez 
+1. Recibe evento "PagoConfirmado".
+2. Verifica disponibilidad de producto.
+3. Si hay stock, lo descuenta.
+4. Si no hay disponibilidad, publica un evento de tipo "AlertaInventario".
+
+Consideraciones de Diseño
+
+- Puede escalar horizontalmente.
+- Opera bajo modelo at-least-once.
+- Requiere idempotencia en entornos reales.
+- Representa la validación física del pedido.
