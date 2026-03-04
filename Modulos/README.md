@@ -41,3 +41,9 @@ El flujo general del sistema es el siguiente:
 6. El Servicio de Notificaciones consume los eventos de confirmación y alertas para informar al cliente.
 
 Este modelo permite que cada servicio funcione de manera autónoma, pudiendo escalar horizontalmente sin afectar a los demás módulos. Asimismo, la arquitectura garantiza que los mensajes permanezcan en las colas hasta ser procesados exitosamente, evitando pérdidas de información ante fallos temporales.
+
+### 2.1 Representación Arquitectónica
+
+El diagrama arquitectónico sitúa al broker de mensajería en el núcleo del sistema, representando el punto central de comunicación entre los servicios. Las colas de mensajes (`pedidos`, `confirmacion_pago` y `alertas`) se encuentran definidas dentro del broker, enfatizando que el intercambio de información se realiza exclusivamente a través de este componente.
+
+No existen comunicaciones directas entre los servicios, lo cual refuerza el desacoplamiento estructural del sistema. Cada módulo interactúa únicamente con las colas correspondientes, ya sea publicando o consumiendo mensajes, lo que permite escalabilidad independiente y tolerancia a fallos parciales.
